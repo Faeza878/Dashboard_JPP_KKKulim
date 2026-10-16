@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JPP CONNECT — Kolej Komuniti Kulim</title>
+<!-- React & ReactDOM UMD — works from file:// without CORS issues -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<!-- Babel Standalone for in-browser JSX transpilation -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        graphite: '#333943',
+        navy: '#263F75',
+        red: { DEFAULT: '#D12F43', dark: '#a82234' },
+        light: '#F3F5F8',
+      },
+      fontFamily: { sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'] },
+      borderRadius: { xl: '1rem', '2xl': '1.25rem', '3xl': '1.75rem' },
+    }
+  }
+}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',Inter,sans-serif;background:#F3F5F8;color:#333943;overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#c1c7d0;border-radius:10px;}
+.glass{background:rgba(255,255,255,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.6);}
+.glass-dark{background:rgba(38,63,117,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.12);}
+.gradient-hero{background:linear-gradient(135deg,#263F75 0%,#1a2d57 45%,#D12F43 100%);}
+.gradient-card{background:linear-gradient(135deg,#263F75,#3a5fa8);}
+.gradient-red{background:linear-gradient(135deg,#D12F43,#a82234);}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+.status-diterima{background:#dbeafe;color:#1e40af;}
+.status-semakan{background:#fef3c7;color:#92400e;}
+.status-tindakan{background:#ede9fe;color:#5b21b6;}
+.status-selesai{background:#dcfce7;color:#166534;}
+.demo-badge{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.5px;}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary{background:linear-gradient(135deg,#263F75,#1f3460);color:#fff;border:none;cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);}
+.btn-primary:hover{background:linear-gradient(135deg,#1f3460,#152447);transform:translateY(-1px);box-shadow:0 8px 24px rgba(38,63,117,0.38);}
+.btn-primary:active{transform:translateY(0);box-shadow:none;}
+.btn-red{background:linear-gradient(135deg,#D12F43,#a82234);color:#fff;border:none;cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);}
+.btn-red:hover{background:linear-gradient(135deg,#a82234,#8a1c2b);transform:translateY(-1px);box-shadow:0 8px 24px rgba(209,47,67,0.38);}
+.btn-red:active{transform:translateY(0);}
+.btn-outline{background:transparent;color:#263F75;border:1.5px solid #263F75;cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);}
+.btn-outline:hover{background:#263F75;color:#fff;transform:translateY(-1px);}
+.btn-outline:active{transform:translateY(0);}
+
+/* ── Sidebar — deep navy ──────────────────────────────────── */
+.sidebar{
+  width:264px;min-height:100vh;
+  background:linear-gradient(180deg,#1e3464 0%,#142248 60%,#0f1a35 100%);
+  border-right:none;
+  position:fixed;left:0;top:0;z-index:50;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:4px 0 32px rgba(0,0,0,0.22);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+/* subtle noise texture overlay */
+.sidebar::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 80% 0%,rgba(110,160,255,0.08) 0%,transparent 60%),
+             radial-gradient(ellipse at 20% 100%,rgba(209,47,67,0.06) 0%,transparent 55%);
+}
+.sidebar-logo-area{
+  position:relative;
+  padding:20px 18px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.sidebar-logo-chip{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,#3a6fd8,#263F75);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;letter-spacing:.5px;
+  box-shadow:0 4px 14px rgba(38,63,117,0.5),inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.sidebar-brand-name{font-size:13px;font-weight:800;color:#fff;letter-spacing:.01em;line-height:1.2;}
+.sidebar-brand-sub{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.4;margin-top:1px;}
+.sidebar-polycc-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:8px;padding:3px 8px;
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);
+  border-radius:6px;font-size:9.5px;font-weight:600;color:rgba(255,255,255,0.5);letter-spacing:.04em;
+}
+.sidebar-user-card{
+  margin:12px 12px 0;padding:9px 11px;border-radius:10px;
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+  display:flex;align-items:center;gap:9px;position:relative;
+}
+.sidebar-user-avatar{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#D12F43,#a82234);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:12px;
+  box-shadow:0 2px 8px rgba(209,47,67,0.4);
+}
+.sidebar-user-name{font-size:12px;font-weight:600;color:#fff;line-height:1.3;}
+.sidebar-user-role{font-size:10px;color:rgba(255,255,255,0.4);line-height:1.3;}
+.sidebar-online-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#22d3a5;border:1.5px solid rgba(20,34,72,0.8);
+  position:absolute;bottom:8px;right:10px;
+  box-shadow:0 0 6px rgba(34,211,165,0.7);
+}
+
+/* ── Sidebar nav ─────────────────────────────────────────── */
+.sidebar-nav{padding:10px 8px;flex:1;overflow-y:auto;}
+.sidebar-nav::-webkit-scrollbar{width:3px;}
+.sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px;}
+.sidebar-section-label{
+  font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,0.28);padding:0 10px;margin:14px 0 5px;
+}
+.nav-item{
+  position:relative;display:flex;align-items:center;gap:10px;
+  padding:8px 10px;margin-bottom:1px;border-radius:9px;
+  cursor:pointer;transition:background .16s cubic-bezier(.4,0,.2,1),color .16s;
+  color:rgba(255,255,255,0.5);
+}
+.nav-item:hover{background:rgba(255,255,255,0.09);color:rgba(255,255,255,0.9);}
+.nav-item:hover .nav-icon{transform:scale(1.15);color:rgba(255,255,255,0.9);}
+.nav-icon{transition:transform .16s cubic-bezier(.4,0,.2,1),color .16s;flex-shrink:0;}
+.nav-label{font-size:12.5px;font-weight:500;transition:color .16s;}
+.nav-item.active{
+  background:rgba(255,255,255,0.13);
+  color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.14),0 2px 8px rgba(0,0,0,0.2);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:-8px;top:18%;bottom:18%;
+  width:3px;border-radius:0 3px 3px 0;
+  background:linear-gradient(180deg,#93c5fd,#f87171);
+  box-shadow:0 0 10px rgba(147,197,253,0.7);
+}
+.nav-item.active .nav-icon{color:#93c5fd;transform:none;}
+.nav-item.active .nav-label{font-weight:700;color:#fff;}
+
+/* ── Sidebar footer ──────────────────────────────────────── */
+.sidebar-footer{
+  padding:12px 14px;border-top:1px solid rgba(255,255,255,0.07);
+  position:relative;
+}
+.sidebar-footer-text{font-size:9.5px;color:rgba(255,255,255,0.22);text-align:center;}
+
+/* ── Main content ────────────────────────────────────────── */
+.main-content{margin-left:264px;min-height:100vh;}
+
+/* ── Header ─────────────────────────────────────────────── */
+.app-header{
+  position:sticky;top:0;z-index:30;
+  background:rgba(255,255,255,0.94);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(229,231,235,0.8);
+  box-shadow:0 1px 0 rgba(229,231,235,0.8),0 4px 16px rgba(38,63,117,0.05);
+  padding:10px 24px;
+  display:flex;align-items:center;gap:12px;
+}
+.header-breadcrumb{
+  display:flex;flex-direction:column;
+}
+.header-page-title{font-size:13.5px;font-weight:700;color:#333943;line-height:1.2;}
+.header-date{font-size:11px;color:#9ca3af;line-height:1.4;}
+.header-search{
+  display:flex;align-items:center;
+  background:#F3F5F8;border:1.5px solid transparent;
+  border-radius:11px;padding:7px 12px;gap:8px;
+  transition:border-color .2s,background .2s,box-shadow .2s,width .25s cubic-bezier(.4,0,.2,1);
+  width:190px;
+}
+.header-search:focus-within{
+  background:#fff;border-color:#263F75;
+  box-shadow:0 0 0 3px rgba(38,63,117,0.1);
+  width:220px;
+}
+.header-search input{background:transparent;border:none;outline:none;font-size:12.5px;color:#333943;width:100%;font-family:inherit;}
+.header-search input::placeholder{color:#b0b7c3;}
+.header-bell{
+  position:relative;width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;cursor:pointer;
+  transition:background .15s;color:#6b7280;
+}
+.header-bell:hover{background:#F3F5F8;color:#263F75;}
+.header-bell-dot{
+  position:absolute;top:5px;right:5px;
+  width:17px;height:17px;border-radius:50%;
+  background:linear-gradient(135deg,#D12F43,#a82234);
+  color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #fff;
+  box-shadow:0 2px 6px rgba(209,47,67,0.4);
+}
+.header-avatar{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#263F75,#3a5fa8);
+  color:#fff;font-weight:700;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:2px solid transparent;
+  transition:border-color .15s,box-shadow .15s;
+  box-shadow:0 2px 8px rgba(38,63,117,0.25);
+}
+.header-avatar:hover{border-color:#263F75;box-shadow:0 0 0 3px rgba(38,63,117,0.15);}
+.header-menu-btn{
+  display:none;width:36px;height:36px;border-radius:10px;
+  align-items:center;justify-content:center;
+  background:transparent;border:none;cursor:pointer;
+  transition:background .15s;color:#6b7280;
+}
+.header-menu-btn:hover{background:#F3F5F8;}
+
+/* ── Bottom nav ──────────────────────────────────────────── */
+.bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:rgba(255,255,255,0.97);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid rgba(229,231,235,0.7);
+  box-shadow:0 -4px 24px rgba(38,63,117,0.09);
+  z-index:50;
+  padding:6px 12px calc(6px + env(safe-area-inset-bottom));
+  display:none;
+  gap:4px;
+}
+.bottom-nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:3px;padding:7px 4px 5px;cursor:pointer;
+  border-radius:12px;transition:background .15s,color .15s;
+  position:relative;
+}
+.bottom-nav-item.active{color:#263F75;}
+.bottom-nav-item.active::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:24px;height:3px;border-radius:0 0 4px 4px;
+  background:linear-gradient(90deg,#263F75,#D12F43);
+  box-shadow:0 1px 6px rgba(38,63,117,0.3);
+}
+.bottom-nav-item:not(.active){color:#9ca3af;}
+.bottom-nav-item:hover:not(.active){background:rgba(38,63,117,0.05);color:#263F75;}
+.bottom-nav-icon{transition:transform .18s cubic-bezier(.34,1.56,.64,1);}
+.bottom-nav-item.active .bottom-nav-icon{transform:translateY(-1px) scale(1.15);}
+.bottom-nav-label{font-size:10px;font-weight:600;letter-spacing:.01em;}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card-hover{transition:transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s;}
+.card-hover:hover{transform:translateY(-4px);box-shadow:0 16px 44px rgba(38,63,117,0.13);}
+
+/* ── Modals ──────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+@keyframes scaleIn{from{opacity:0;transform:scale(.96) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-box{background:#fff;border-radius:1.5rem;padding:2rem;max-width:560px;width:90%;max-height:88vh;overflow-y:auto;box-shadow:0 30px 90px rgba(0,0,0,0.22);animation:scaleIn .22s cubic-bezier(.4,0,.2,1) forwards;}
+
+/* ── Forms ───────────────────────────────────────────────── */
+input,select,textarea{transition:border-color .15s,box-shadow .15s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#263F75 !important;box-shadow:0 0 0 3px rgba(38,63,117,0.12);}
+
+/* ── Org chart ───────────────────────────────────────────── */
+.org-card{border:1.5px solid #e5e7eb;border-radius:1rem;background:#fff;padding:16px;text-align:center;transition:all .2s cubic-bezier(.4,0,.2,1);}
+.org-card:hover{border-color:#263F75;box-shadow:0 10px 28px rgba(38,63,117,0.12);transform:translateY(-2px);}
+.avatar-placeholder{background:linear-gradient(135deg,#263F75,#3a5fa8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;}
+
+/* ── Progress bars ───────────────────────────────────────── */
+.progress-bar{height:6px;border-radius:3px;background:#e5e7eb;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#263F75,#D12F43);transition:width .9s cubic-bezier(.4,0,.2,1);}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeInUp .3s cubic-bezier(.4,0,.2,1) forwards;}
+
+/* ── Misc ────────────────────────────────────────────────── */
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:#e0e7ff;color:#3730a3;}
+.announcement-card{border-left:3px solid #263F75;padding:14px 16px;background:#fff;border-radius:0 .75rem .75rem 0;box-shadow:0 1px 8px rgba(0,0,0,0.05);transition:box-shadow .2s,transform .2s;}
+.announcement-card:hover{box-shadow:0 4px 16px rgba(38,63,117,0.1);transform:translateX(2px);}
+.announcement-card.urgent{border-left-color:#D12F43;}
+
+@media(max-width:1024px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-content{margin-left:0;}
+  .bottom-nav{display:flex !important;}
+  .app-header{padding:10px 14px;}
+  .header-menu-btn{display:flex !important;}
+  .header-search{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script type="text/babel">
+// ─── React from UMD globals ───────────────────────────────────────────────────
+const { useState, useEffect, useCallback, useRef } = React;
+const { createRoot } = ReactDOM;
+
+{
+
+  // ─── DEMO DATA ─────────────────────────────────────────────────────────────
+  const DEMO_ADUAN = [
+    { id:'ADU-2025-001', tajuk:'Kipas Siling Bilik Darjah B201 Rosak', kategori:'Fasiliti', status:'Selesai', tarikh:'2025-04-10', lokasi:'Blok B, Bilik 201', keterangan:'Kipas siling di bilik darjah B201 tidak berfungsi sejak minggu lepas. Ia menjejaskan keselesaan pelajar semasa kuliah.', mesejStaf:'Kipas telah dibaiki pada 14 April 2025. Terima kasih atas laporan anda.' },
+    { id:'ADU-2025-002', tajuk:'Wifi Di Perpustakaan Lemah', kategori:'Teknologi/ICT', status:'Dalam Tindakan', tarikh:'2025-05-01', lokasi:'Perpustakaan Utama', keterangan:'Sambungan wifi di kawasan perpustakaan sering terputus terutama pada waktu puncak.', mesejStaf:'' },
+    { id:'ADU-2025-003', tajuk:'Kemudahan Surau Perlu Dinaiktaraf', kategori:'Kebajikan', status:'Dalam Semakan', tarikh:'2025-05-12', lokasi:'Surau Pelajar', keterangan:'Beberapa kemudahan seperti tempat wudhu dan rak kasut memerlukan penyelenggaraan.', mesejStaf:'' },
+    { id:'ADU-2025-004', tajuk:'Lampu Tangga Blok C Padam', kategori:'Keselamatan', status:'Diterima', tarikh:'2025-05-18', lokasi:'Blok C, Tangga Utama', keterangan:'Lampu di laluan tangga utama blok C telah padam sejak 3 hari lalu menjadikan kawasan tersebut gelap pada waktu malam.', mesejStaf:'' },
+  ];
+
+  const DEMO_EVENTS = [
+    { id:1, tajuk:'Majlis Mesyuarat Agung JPP 2025', kategori:'Aktiviti JPP', tarikh:'2025-06-15', masa:'9:00 PG', venue:'Dewan Serbaguna', deskripsi:'Mesyuarat agung tahunan Jawatankuasa Perwakilan Pelajar bagi sesi 2024/2025.', warna:'#263F75' },
+    { id:2, tajuk:'Karnival Keusahawanan Pelajar', kategori:'Keusahawanan', tarikh:'2025-06-22', masa:'8:00 PG', venue:'Kawasan Luar Dewan', deskripsi:'Pameran produk dan perniagaan pelajar — menyertai pertandingan gerai terbaik!', warna:'#D12F43' },
+    { id:3, tajuk:'Hari Sukan Tahunan 2025', kategori:'Sukan', tarikh:'2025-07-05', masa:'7:30 PG', venue:'Padang Sukan Kolej', deskripsi:'Pertandingan pelbagai acara sukan antara kumpulan pelajar. Daftarkan pasukan anda!', warna:'#059669' },
+    { id:4, tajuk:'Bengkel Kepimpinan Pelajar', kategori:'Akademik', tarikh:'2025-07-12', masa:'2:00 PTG', venue:'Bilik Seminar A', deskripsi:'Program pembangunan kepimpinan untuk ahli JPP dan pelajar berminat.', warna:'#7c3aed' },
+    { id:5, tajuk:'Program Khidmat Komuniti', kategori:'Kesukarelawanan', tarikh:'2025-07-19', masa:'8:00 PG', venue:'Taman Kota Kenari', deskripsi:'Program gotong-royong dan khidmat komuniti bersama penduduk setempat.', warna:'#0891b2' },
+    { id:6, tajuk:'Malam Kebudayaan & Seni', kategori:'Komuniti', tarikh:'2025-08-09', masa:'7:30 MLM', venue:'Dewan Serbaguna', deskripsi:'Persembahan budaya dan seni pelajar dari pelbagai program pengajian.', warna:'#d97706' },
+  ];
+
+  const DEMO_PENGUMUMAN = [
+    { id:1, tajuk:'Jadual Peperiksaan Akhir Semester Jun 2025', kategori:'Akademik', tarikh:'2025-05-20', kandungan:'Jadual peperiksaan akhir semester Jun 2025 telah ditetapkan. Sila semak papan kenyataan dan portal rasmi untuk maklumat lanjut.', penting:true },
+    { id:2, tajuk:'Pendaftaran Program Mobiliti Pelajar 2025', kategori:'Peluang', tarikh:'2025-05-18', kandungan:'Program Mobiliti Pelajar POLYCC dibuka untuk pendaftaran. Kemaskini resume dan transkrip anda sebelum 30 Mei 2025.', penting:false },
+    { id:3, tajuk:'Peraturan Baharu Kawasan Parkir Kolej', kategori:'Pentadbiran', tarikh:'2025-05-15', kandungan:'Pihak pengurusan kolej telah mengeluarkan peraturan baharu berkaitan kawasan parkir kenderaan pelajar berkuatkuasa 1 Jun 2025.', penting:false },
+    { id:4, tajuk:'Anugerah Pelajar Cemerlang — Borang Pencalonan Dibuka', kategori:'Pengiktirafan', tarikh:'2025-05-10', kandungan:'Pelajar cemerlang dalam bidang akademik, kepimpinan dan khidmat komuniti boleh dicalonkan melalui Pejabat HEP sebelum 25 Mei 2025.', penting:true },
+    { id:5, tajuk:'Kemudahan Perpustakaan — Waktu Operasi Baharu', kategori:'Kemudahan', tarikh:'2025-05-05', kandungan:'Perpustakaan kolej kini beroperasi dari Isnin hingga Sabtu, 8 pagi hingga 10 malam bermula 5 Mei 2025.', penting:false },
+  ];
+
+  const DEMO_DOKUMEN = [
+    { id:1, nama:'Borang e-Aduan Pelajar (Manual)', saiz:'245 KB', format:'PDF', tarikh:'2025-04-01', kategori:'Borang' },
+    { id:2, nama:'Panduan Peraturan Pelajar 2024/2025', saiz:'1.2 MB', format:'PDF', tarikh:'2025-01-15', kategori:'Panduan' },
+    { id:3, nama:'Borang Permohonan Cuti Akademik', saiz:'180 KB', format:'PDF', tarikh:'2025-03-10', kategori:'Borang' },
+    { id:4, nama:'Garis Panduan JPP Kolej Komuniti Kulim', saiz:'890 KB', format:'PDF', tarikh:'2025-02-20', kategori:'Panduan JPP' },
+    { id:5, nama:'Borang Peminjaman Peralatan ICT', saiz:'156 KB', format:'PDF', tarikh:'2025-04-15', kategori:'Borang' },
+    { id:6, nama:'Minit Mesyuarat JPP Mac 2025', saiz:'320 KB', format:'PDF', tarikh:'2025-03-28', kategori:'Minit Mesyuarat' },
+    { id:7, nama:'Pelan Strategik JPP 2025', saiz:'2.1 MB', format:'PDF', tarikh:'2025-01-10', kategori:'Panduan JPP' },
+    { id:8, nama:'Borang Laporan Aktiviti', saiz:'200 KB', format:'DOCX', tarikh:'2025-05-01', kategori:'Borang' },
+  ];
+
+  const DEMO_GALERI = [
+    { id:1, album:'Karnival Pelajar 2024', tarikh:'2024-11-15', gambar:12, kategori:'Aktiviti', warna:'#263F75' },
+    { id:2, album:'Hari Graduasi 2024', tarikh:'2024-10-20', gambar:45, kategori:'Akademik', warna:'#D12F43' },
+    { id:3, album:'Program Khidmat Komuniti', tarikh:'2024-09-08', gambar:28, kategori:'Komuniti', warna:'#059669' },
+    { id:4, album:'Pertandingan Debat Antara Kolej', tarikh:'2024-08-25', gambar:19, kategori:'Akademik', warna:'#7c3aed' },
+    { id:5, album:'Majlis Anugerah Pelajar', tarikh:'2024-07-12', gambar:33, kategori:'Pengiktirafan', warna:'#d97706' },
+    { id:6, album:'Kempen Alam Sekitar', tarikh:'2024-06-05', gambar:22, kategori:'Komuniti', warna:'#0891b2' },
+  ];
+
+  const JPP_ORG = {
+    penasihat: { nama:'[Nama Penasihat JPP]', jawatan:'Penasihat JPP', nota:'Dilantik oleh pihak pengurusan kolej', inisial:'PA' },
+    ydp: { nama:'[Yang Dipertua JPP]', jawatan:'Yang Dipertua', inisial:'YD' },
+    tydp: { nama:'[Timbalan Yang Dipertua]', jawatan:'Timbalan Yang Dipertua', inisial:'TY' },
+    setiausaha: { nama:'[Setiausaha JPP]', jawatan:'Setiausaha', inisial:'SU' },
+    bendahari: { nama:'[Bendahari JPP]', jawatan:'Bendahari', inisial:'BE' },
+    exco: [
+      { nama:'[EXCO Akademik]', jawatan:'AJK Akademik', inisial:'AK' },
+      { nama:'[EXCO Kebajikan]', jawatan:'AJK Kebajikan', inisial:'KB' },
+      { nama:'[EXCO Sukan & Rekreasi]', jawatan:'AJK Sukan & Rekreasi', inisial:'SR' },
+      { nama:'[EXCO Keusahawanan]', jawatan:'AJK Keusahawanan', inisial:'KU' },
+      { nama:'[EXCO Kebudayaan]', jawatan:'AJK Kebudayaan', inisial:'KC' },
+      { nama:'[EXCO ICT & Media]', jawatan:'AJK ICT & Media', inisial:'IM' },
+    ]
+  };
+
+  // ─── ICONS (inline SVG) ──────────────────────────────────────────────────
+  const Icon = ({ name, size=20, cls='' }) => {
+    const icons = {
+      dashboard: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>,
+      aduan: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>,
+      info: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>,
+      aktiviti: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
+      org: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+      pengumuman: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+      suara: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+      galeri: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>,
+      dokumen: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+      hubungi: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.63 12 19.79 19.79 0 0 1 1.56 3.39 2 2 0 0 1 3.53 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.7a16 16 0 0 0 7.39 7.39l1.86-1.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+      admin: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+      bell: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+      search: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+      menu: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={cls}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+      close: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={cls}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+      plus: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={cls}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+      check: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={cls}><polyline points="20 6 9 17 4 12"/></svg>,
+      download: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+      arrow: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={cls}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+      chart: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+      eye: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+      lock: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+      star: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+      location: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+      phone: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.63 12 19.79 19.79 0 0 1 1.56 3.39 2 2 0 0 1 3.53 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.7a16 16 0 0 0 7.39 7.39l1.86-1.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+      mail: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+      globe: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+      logout: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+      filter: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={cls}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
+    };
+    return icons[name] || null;
+  };
+
+  // ─── NAV CONFIG ──────────────────────────────────────────────────────────
+  const NAV_ITEMS = [
+    { id:'dashboard', label:'Dashboard', icon:'dashboard' },
+    { id:'aduan', label:'e-Aduan', icon:'aduan' },
+    { id:'info', label:'Maklumat Kolej', icon:'info' },
+    { id:'aktiviti', label:'Aktiviti & Komuniti', icon:'aktiviti' },
+    { id:'org', label:'Carta Organisasi JPP', icon:'org' },
+    { id:'pengumuman', label:'Pengumuman', icon:'pengumuman' },
+    { id:'suara', label:'Suara Pelajar', icon:'suara' },
+    { id:'galeri', label:'Galeri Digital', icon:'galeri' },
+    { id:'dokumen', label:'Dokumen & Borang', icon:'dokumen' },
+    { id:'hubungi', label:'Hubungi Kami', icon:'hubungi' },
+  ];
+
+  const BOTTOM_NAV = [
+    { id:'dashboard', label:'Utama', icon:'dashboard' },
+    { id:'aduan', label:'Aduan', icon:'aduan' },
+    { id:'aktiviti', label:'Aktiviti', icon:'aktiviti' },
+    { id:'pengumuman', label:'Berita', icon:'pengumuman' },
+    { id:'admin', label:'Admin', icon:'admin' },
+  ];
+
+  // ─── HELPERS ─────────────────────────────────────────────────────────────
+  const today = new Date();
+  const fmtDate = (d) => new Date(d).toLocaleDateString('ms-MY', { day:'numeric', month:'long', year:'numeric' });
+  const getDayName = () => today.toLocaleDateString('ms-MY', { weekday:'long' });
+  const getToday = () => today.toLocaleDateString('ms-MY', { day:'numeric', month:'long', year:'numeric' });
+
+  const StatusBadge = ({ status }) => {
+    const map = { 'Diterima':'status-diterima', 'Dalam Semakan':'status-semakan', 'Dalam Tindakan':'status-tindakan', 'Selesai':'status-selesai' };
+    const icons = { 'Diterima':'📥', 'Dalam Semakan':'🔍', 'Dalam Tindakan':'⚙️', 'Selesai':'✅' };
+    return <span className={`status-badge ${map[status]||'status-diterima'}`}>{icons[status]} {status}</span>;
+  };
+
+  // ─── SIDEBAR ─────────────────────────────────────────────────────────────
+  const Sidebar = ({ active, setPage, isOpen, onClose }) => {
+    return (
+      <>
+        {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" style={{backdropFilter:'blur(3px)'}} onClick={onClose}/>}
+        <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+
+          {/* Logo area */}
+          <div className="sidebar-logo-area">
+            <div className="flex items-center gap-3">
+              <div className="sidebar-logo-chip">JPP</div>
+              <div>
+                <div className="sidebar-brand-name">JPP CONNECT</div>
+                <div className="sidebar-brand-sub">Kolej Komuniti Kulim</div>
+              </div>
+            </div>
+            <div className="sidebar-polycc-badge">
+              <span>⬡</span> POLYCC · JPPKK
+            </div>
+            {/* User card */}
+            <div className="sidebar-user-card">
+              <div className="sidebar-user-avatar">P</div>
+              <div>
+                <div className="sidebar-user-name">Pelajar Demo</div>
+                <div className="sidebar-user-role">Pelajar · Sesi 2024/25</div>
+              </div>
+              <div className="sidebar-online-dot" title="Dalam talian"/>
+            </div>
+          </div>
+
+          {/* Nav */}
+          <div className="sidebar-nav">
+            <div className="sidebar-section-label">Menu Utama</div>
+            {NAV_ITEMS.map(item => (
+              <div key={item.id}
+                className={`nav-item ${active===item.id?'active':''}`}
+                onClick={() => { setPage(item.id); onClose(); }}>
+                <span className="nav-icon"><Icon name={item.icon} size={16}/></span>
+                <span className="nav-label">{item.label}</span>
+              </div>
+            ))}
+            <div className="sidebar-section-label">Pentadbiran</div>
+            <div className={`nav-item ${active==='admin'?'active':''}`}
+              onClick={() => { setPage('admin'); onClose(); }}>
+              <span className="nav-icon"><Icon name="admin" size={16}/></span>
+              <span className="nav-label">Admin Dashboard</span>
+              <span style={{marginLeft:'auto',fontSize:'9px',fontWeight:700,background:'rgba(209,47,67,0.3)',color:'#fca5a5',padding:'2px 6px',borderRadius:'5px',letterSpacing:'.04em'}}>DEMO</span>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="sidebar-footer">
+            <div className="sidebar-footer-text">v1.0 · DATA DEMO · Bukan Produksi</div>
+          </div>
+
+        </div>
+      </>
+    );
+  };
+
+  // ─── HEADER ──────────────────────────────────────────────────────────────
+  const Header = ({ page, onMenuClick, onNav }) => {
+    const labels = { dashboard:'Dashboard', aduan:'e-Aduan Pelajar', info:'Maklumat Kolej', aktiviti:'Aktiviti & Komuniti', org:'Carta Organisasi JPP', pengumuman:'Pengumuman', suara:'Suara Pelajar', galeri:'Galeri Digital', dokumen:'Dokumen & Borang', hubungi:'Hubungi Kami', admin:'Admin Dashboard' };
+    return (
+      <header className="app-header">
+        <button className="header-menu-btn" style={{display:'none'}} onClick={onMenuClick}><Icon name="menu" size={19}/></button>
+        <div className="header-breadcrumb flex-1">
+          <div className="header-page-title">{labels[page]||'Dashboard'}</div>
+          <div className="header-date">{getDayName()}, {getToday()}</div>
+        </div>
+        <div className="header-search">
+          <Icon name="search" size={14} cls="text-gray-400" style={{flexShrink:0}}/>
+          <input placeholder="Cari modul, maklumat..."/>
+        </div>
+        <button className="header-bell" onClick={() => onNav('pengumuman')}>
+          <Icon name="bell" size={18}/>
+          <span className="header-bell-dot">3</span>
+        </button>
+        <div className="header-avatar">P</div>
+      </header>
+    );
+  };
+
+  // ─── BOTTOM NAV ──────────────────────────────────────────────────────────
+  const BottomNav = ({ active, setPage }) => (
+    <nav className="bottom-nav">
+      {BOTTOM_NAV.map(item => (
+        <div key={item.id} className={`bottom-nav-item ${active===item.id?'active':''}`} onClick={() => setPage(item.id)}>
+          <span className="bottom-nav-icon"><Icon name={item.icon} size={20}/></span>
+          <span className="bottom-nav-label">{item.label}</span>
+        </div>
+      ))}
+    </nav>
+  );
+
+  // ─── STAT CARD ───────────────────────────────────────────────────────────
+  const StatCard = ({ label, value, sub, color='#263F75', icon }) => (
+    <div className="bg-white rounded-2xl p-4 card-hover shadow-sm border border-gray-100">
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:`${color}18`}}>
+          <Icon name={icon} size={18} cls="" style={{color}}/>
+        </div>
+        <span className="demo-badge">DATA DEMO</span>
+      </div>
+      <div className="text-2xl font-bold text-graphite">{value}</div>
+      <div className="text-sm font-medium text-gray-600 mt-0.5">{label}</div>
+      {sub && <div className="text-xs text-gray-400 mt-1">{sub}</div>}
+    </div>
+  );
+
+  // ─── DASHBOARD PAGE ──────────────────────────────────────────────────────
+  const DashboardPage = ({ setPage }) => {
+    const stats = [
+      { label:'Aduan Aktif', value:'12', sub:'3 mendesak', color:'#D12F43', icon:'aduan' },
+      { label:'Aktiviti Bulan Ini', value:'6', sub:'2 pendaftaran dibuka', color:'#263F75', icon:'aktiviti' },
+      { label:'Pengumuman Baharu', value:'5', sub:'2 disematkan', color:'#059669', icon:'pengumuman' },
+      { label:'Pelajar Berdaftar', value:'847', sub:'Portal aktif', color:'#7c3aed', icon:'org' },
+    ];
+
+    return (
+      <div className="p-4 lg:p-6 space-y-6 pb-20 lg:pb-6 fade-in">
+        {/* Hero */}
+        <div className="gradient-hero rounded-3xl overflow-hidden relative" style={{minHeight:'200px'}}>
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-white/20 translate-x-1/3 -translate-y-1/3"/>
+            <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/10 -translate-x-1/4 translate-y-1/4"/>
+          </div>
+          <div className="relative z-10 p-6 lg:p-8 flex flex-col justify-between h-full" style={{minHeight:'200px'}}>
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-white/70 text-sm font-medium mb-1">JPP CONNECT</div>
+                <h1 className="text-white text-2xl lg:text-3xl font-bold leading-tight">Selamat Datang ke<br/>JPP CONNECT 👋</h1>
+                <p className="text-white/70 text-sm mt-2">Your Voice. Our Action. One Community.</p>
+              </div>
+              <div className="hidden sm:flex flex-col items-center gap-2 text-right">
+                <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center">
+                  <span className="text-3xl">🎓</span>
+                </div>
+                <div className="text-[10px] text-white/50">Kolej Komuniti Kulim</div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6 flex-wrap">
+              <button className="btn-red px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2" onClick={() => setPage('aduan')}>
+                <Icon name="plus" size={16}/> Aduan Baharu
+              </button>
+              <button className="glass text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2" onClick={() => setPage('aktiviti')}>
+                <Icon name="aktiviti" size={16}/> Lihat Aktiviti
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-graphite">Ringkasan Portal</h2>
+            <span className="demo-badge">DATA DEMO</span>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {stats.map((s,i) => <StatCard key={i} {...s}/>)}
+          </div>
+        </div>
+
+        {/* 2-col grid */}
+        <div className="grid lg:grid-cols-3 gap-4">
+          {/* Upcoming events */}
+          <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-graphite">Aktiviti Akan Datang</h3>
+              <button className="text-navy text-sm font-medium flex items-center gap-1" onClick={() => setPage('aktiviti')}>Lihat semua <Icon name="arrow" size={14}/></button>
+            </div>
+            <div className="space-y-3">
+              {DEMO_EVENTS.slice(0,4).map(ev => (
+                <div key={ev.id} className="flex items-center gap-3 p-3 rounded-xl bg-light hover:bg-gray-100 transition cursor-pointer">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{background:ev.warna}}>
+                    {new Date(ev.tarikh).getDate()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-graphite truncate">{ev.tajuk}</div>
+                    <div className="text-xs text-gray-400">{fmtDate(ev.tarikh)} · {ev.venue}</div>
+                  </div>
+                  <span className="tag flex-shrink-0">{ev.kategori}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Announcements */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-graphite">Pengumuman Terkini</h3>
+              <button className="text-navy text-sm font-medium" onClick={() => setPage('pengumuman')}>Semua</button>
+            </div>
+            <div className="space-y-3">
+              {DEMO_PENGUMUMAN.slice(0,4).map(p => (
+                <div key={p.id} className={`announcement-card ${p.penting?'urgent':''}`}>
+                  <div className="text-xs font-semibold text-graphite leading-tight">{p.tajuk}</div>
+                  <div className="text-[11px] text-gray-400 mt-1">{fmtDate(p.tarikh)}</div>
+                  {p.penting && <span className="text-[10px] text-red font-bold">● PENTING</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Analytics demo */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-semibold text-graphite">Analitik Aduan</h3>
+              <div className="text-xs text-gray-400 mt-0.5">Status aduan pelajar</div>
+            </div>
+            <span className="demo-badge">DATA DEMO</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[{l:'Diterima',v:4,c:'#3b82f6',p:33},{l:'Dalam Semakan',v:3,c:'#f59e0b',p:25},{l:'Dalam Tindakan',v:3,c:'#8b5cf6',p:25},{l:'Selesai',v:2,c:'#10b981',p:17}].map((s,i) => (
+              <div key={i} className="text-center">
+                <div className="text-2xl font-bold" style={{color:s.c}}>{s.v}</div>
+                <div className="text-xs text-gray-500 mb-2">{s.l}</div>
+                <div className="progress-bar"><div className="progress-fill" style={{width:`${s.p*3}%`,background:s.c}}/></div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
+            {[{l:'Masa Respons Purata',v:'2.3 hari'},{l:'Kadar Selesai',v:'17%'},{l:'Kepuasan Pelajar',v:'4.1/5'}].map((m,i)=>(
+              <div key={i}><div className="font-bold text-graphite">{m.v}</div><div className="text-xs text-gray-400">{m.l}</div></div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick access */}
+        <div>
+          <h3 className="font-semibold text-graphite mb-3">Akses Pantas</h3>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            {[{id:'aduan',l:'e-Aduan',icon:'aduan',c:'#D12F43'},{id:'galeri',l:'Galeri',icon:'galeri',c:'#263F75'},{id:'dokumen',l:'Dokumen',icon:'dokumen',c:'#059669'},{id:'suara',l:'Suara',icon:'suara',c:'#7c3aed'},{id:'org',l:'Carta JPP',icon:'org',c:'#d97706'},{id:'hubungi',l:'Hubungi',icon:'hubungi',c:'#0891b2'}].map(q=>(
+              <div key={q.id} className="bg-white rounded-2xl p-3 text-center card-hover shadow-sm border border-gray-100 cursor-pointer" onClick={() => setPage(q.id)}>
+                <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{background:`${q.c}18`}}>
+                  <Icon name={q.icon} size={18} cls="" style={{color:q.c}}/>
+                </div>
+                <div className="text-xs font-semibold text-graphite">{q.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ─── e-ADUAN PAGE ────────────────────────────────────────────────────────
+  const AduanPage = () => {
+    const [tab, setTab] = useState('senarai');
+    const [aduan, setAduan] = useState(DEMO_ADUAN);
+    const [showForm, setShowForm] = useState(false);
+    const [selected, setSelected] = useState(null);
+    const [form, setForm] = useState({ tajuk:'', kategori:'Fasiliti', keterangan:'', lokasi:'', privasi:'awam', keutamaan:'biasa' });
+    const [submitted, setSubmitted] = useState(null);
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+      const e = {};
+      if(!form.tajuk.trim()) e.tajuk = 'Sila masukkan tajuk aduan.';
+      if(!form.keterangan.trim()) e.keterangan = 'Sila masukkan keterangan aduan.';
+      if(!form.lokasi.trim()) e.lokasi = 'Sila masukkan lokasi.';
+      return e;
+    };
+
+    const submit = () => {
+      const e = validate();
+      if(Object.keys(e).length > 0) { setErrors(e); return; }
+      const ref = 'ADU-2025-' + String(aduan.length + 1).padStart(3,'0');
+      const newAduan = { id:ref, ...form, status:'Diterima', tarikh:new Date().toISOString().split('T')[0], mesejStaf:'' };
+      setAduan([newAduan, ...aduan]);
+      setSubmitted(ref);
+      setShowForm(false);
+      setForm({ tajuk:'', kategori:'Fasiliti', keterangan:'', lokasi:'', privasi:'awam', keutamaan:'biasa' });
+      setErrors({});
+      setTab('senarai');
+    };
+
+    const inp = (field, val) => { setForm(f=>({...f,[field]:val})); setErrors(e=>({...e,[field]:undefined})); };
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl font-bold text-graphite">e-Aduan Pelajar</h2>
+            <p className="text-sm text-gray-400 mt-0.5">Kemukakan aduan anda dengan selamat dan terkawal.</p>
+          </div>
+          <button className="btn-red px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2" onClick={() => setShowForm(true)}>
+            <Icon name="plus" size={16}/> Aduan Baharu
+          </button>
+        </div>
+
+        {/* Notice */}
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 flex gap-3">
+          <Icon name="info" size={18} cls="text-amber-600 flex-shrink-0 mt-0.5"/>
+          <div className="text-sm text-amber-800">
+            <strong>Notis Penting:</strong> Portal ini BUKAN saluran kecemasan. Untuk kes kecemasan sila hubungi pihak berkuasa atau pegawai kolej secara terus. Maklumat peribadi anda dilindungi mengikut keperluan perlindungan data Malaysia.
+          </div>
+        </div>
+
+        {submitted && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-5 flex gap-3">
+            <Icon name="check" size={18} cls="text-green-600 flex-shrink-0"/>
+            <div className="text-sm text-green-800">
+              <strong>Aduan berjaya dihantar!</strong> Nombor rujukan anda: <span className="font-mono font-bold">{submitted}</span>. Simpan nombor ini untuk semakan status.
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="flex gap-1 mb-5 bg-light p-1 rounded-xl w-fit">
+          {[{id:'senarai',l:'Aduan Saya'},{id:'status',l:'Penjejak Status'}].map(t=>(
+            <button key={t.id} className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${tab===t.id?'bg-white text-navy shadow-sm':'text-gray-500'}`} onClick={()=>setTab(t.id)}>{t.l}</button>
+          ))}
+        </div>
+
+        {tab==='senarai' && (
+          <div className="space-y-3">
+            {aduan.map(a => (
+              <div key={a.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 card-hover cursor-pointer" onClick={()=>setSelected(a)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-mono text-xs text-gray-400">{a.id}</span>
+                      <StatusBadge status={a.status}/>
+                      {a.keutamaan==='mendesak' && <span className="status-badge bg-red-50 text-red">⚡ Mendesak</span>}
+                    </div>
+                    <div className="font-semibold text-graphite text-sm">{a.tajuk}</div>
+                    <div className="text-xs text-gray-400 mt-1">{a.kategori} · {fmtDate(a.tarikh)} · {a.lokasi}</div>
+                  </div>
+                  <Icon name="arrow" size={16} cls="text-gray-300 flex-shrink-0 mt-1"/>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab==='status' && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h3 className="font-semibold text-graphite mb-4">Penjejak Status Aduan</h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[{s:'Diterima',desc:'Aduan diterima sistem',n:DEMO_ADUAN.filter(a=>a.status==='Diterima').length},{s:'Dalam Semakan',desc:'Sedang disemak pegawai',n:DEMO_ADUAN.filter(a=>a.status==='Dalam Semakan').length},{s:'Dalam Tindakan',desc:'Tindakan sedang diambil',n:DEMO_ADUAN.filter(a=>a.status==='Dalam Tindakan').length},{s:'Selesai',desc:'Aduan telah diselesaikan',n:DEMO_ADUAN.filter(a=>a.status==='Selesai').length}].map((item,i)=>(
+                <div key={i} className="text-center p-4 rounded-xl bg-light">
+                  <div className="text-2xl font-bold text-graphite mb-1">{item.n}</div>
+                  <StatusBadge status={item.s}/>
+                  <div className="text-xs text-gray-400 mt-2">{item.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Detail Modal */}
+        {selected && (
+          <div className="modal-overlay" onClick={()=>setSelected(null)}>
+            <div className="modal-box" onClick={e=>e.stopPropagation()}>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1 flex-wrap"><span className="font-mono text-xs text-gray-400">{selected.id}</span><StatusBadge status={selected.status}/></div>
+                  <h3 className="font-bold text-graphite text-lg">{selected.tajuk}</h3>
+                </div>
+                <button className="p-2 rounded-xl hover:bg-light" onClick={()=>setSelected(null)}><Icon name="close" size={18}/></button>
+              </div>
+              <div className="space-y-3">
+                {[{l:'Kategori',v:selected.kategori},{l:'Lokasi',v:selected.lokasi},{l:'Tarikh',v:fmtDate(selected.tarikh)}].map((f,i)=>(
+                  <div key={i} className="flex gap-3"><span className="text-sm text-gray-400 w-24 flex-shrink-0">{f.l}</span><span className="text-sm font-medium text-graphite">{f.v}</span></div>
+                ))}
+                <div><div className="text-sm text-gray-400 mb-1">Keterangan</div><div className="text-sm text-graphite bg-light rounded-xl p-3">{selected.keterangan}</div></div>
+                {selected.mesejStaf && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                    <div className="text-xs font-semibold text-green-700 mb-1">Respons Rasmi</div>
+                    <div className="text-sm text-green-800">{selected.mesejStaf}</div>
+                  </div>
+                )}
+                <div className="bg-light rounded-xl p-3">
+                  <div className="text-xs font-semibold text-gray-500 mb-2">Sejarah Status</div>
+                  <div className="space-y-2">
+                    {['Diterima','Dalam Semakan','Dalam Tindakan','Selesai'].map((s,i) => {
+                      const statuses = ['Diterima','Dalam Semakan','Dalam Tindakan','Selesai'];
+                      const current = statuses.indexOf(selected.status);
+                      const done = i <= current;
+                      return (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${done?'bg-navy':'bg-gray-200'}`}>
+                            {done && <Icon name="check" size={11} cls="text-white"/>}
+                          </div>
+                          <span className={`text-sm ${done?'text-graphite font-medium':'text-gray-400'}`}>{s}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Form Modal */}
+        {showForm && (
+          <div className="modal-overlay" onClick={()=>setShowForm(false)}>
+            <div className="modal-box" onClick={e=>e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold text-graphite text-lg">Borang Aduan Baharu</h3>
+                <button className="p-2 rounded-xl hover:bg-light" onClick={()=>setShowForm(false)}><Icon name="close" size={18}/></button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-graphite mb-1.5">Tajuk Aduan *</label>
+                  <input className={`w-full border ${errors.tajuk?'border-red':'border-gray-200'} rounded-xl px-3 py-2.5 text-sm`} placeholder="Ringkasan aduan anda" value={form.tajuk} onChange={e=>inp('tajuk',e.target.value)}/>
+                  {errors.tajuk && <p className="text-red text-xs mt-1">{errors.tajuk}</p>}
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-graphite mb-1.5">Kategori *</label>
+                    <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white" value={form.kategori} onChange={e=>inp('kategori',e.target.value)}>
+                      {['Fasiliti','Akademik','Kebajikan','Keselamatan','Teknologi/ICT','Lain-lain'].map(c=><option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-graphite mb-1.5">Tahap Keutamaan</label>
+                    <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white" value={form.keutamaan} onChange={e=>inp('keutamaan',e.target.value)}>
+                      <option value="biasa">Biasa</option>
+                      <option value="mendesak">Mendesak</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-graphite mb-1.5">Keterangan Lanjut *</label>
+                  <textarea className={`w-full border ${errors.keterangan?'border-red':'border-gray-200'} rounded-xl px-3 py-2.5 text-sm resize-none`} rows={4} placeholder="Huraikan aduan anda dengan terperinci..." value={form.keterangan} onChange={e=>inp('keterangan',e.target.value)}/>
+                  {errors.keterangan && <p className="text-red text-xs mt-1">{errors.keterangan}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-graphite mb-1.5">Lokasi *</label>
+                  <input className={`w-full border ${errors.lokasi?'border-red':'border-gray-200'} rounded-xl px-3 py-2.5 text-sm`} placeholder="Cth: Blok A, Bilik 101" value={form.lokasi} onChange={e=>inp('lokasi',e.target.value)}/>
+                  {errors.lokasi && <p className="text-red text-xs mt-1">{errors.lokasi}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-graphite mb-1.5">Pilihan Privasi</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[{v:'awam',l:'Aduan Biasa',d:'Nama ditunjukkan kepada pegawai'},{v:'tanpa-nama',l:'Tanpa Nama',d:'Identiti pelajar dilindungi'}].map(p=>(
+                      <label key={p.v} className={`border-2 rounded-xl p-3 cursor-pointer transition ${form.privasi===p.v?'border-navy bg-blue-50':'border-gray-200'}`}>
+                        <input type="radio" name="privasi" value={p.v} checked={form.privasi===p.v} onChange={()=>inp('privasi',p.v)} className="sr-only"/>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${form.privasi===p.v?'border-navy':'border-gray-300'}`}>
+                            {form.privasi===p.v && <div className="w-2 h-2 rounded-full bg-navy"/>}
+                          </div>
+                          <span className="text-sm font-semibold text-graphite">{p.l}</span>
+                        </div>
+                        <div className="text-xs text-gray-400 ml-6">{p.d}</div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-light rounded-xl p-3 flex items-start gap-2">
+                  <Icon name="lock" size={15} cls="text-gray-400 mt-0.5 flex-shrink-0"/>
+                  <p className="text-xs text-gray-500">Maklumat aduan anda dirahsiakan dan hanya boleh diakses oleh pegawai yang diberi kuasa. Ini bukan saluran kecemasan.</p>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button className="flex-1 btn-outline px-4 py-2.5 rounded-xl text-sm font-semibold" onClick={()=>setShowForm(false)}>Batal</button>
+                  <button className="flex-1 btn-primary px-4 py-2.5 rounded-xl text-sm font-semibold" onClick={submit}>Hantar Aduan</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── MAKLUMAT KOLEJ ──────────────────────────────────────────────────────
+  const InfoPage = () => {
+    const [tab, setTab] = useState('tentang');
+    const tabs = [{id:'tentang',l:'Tentang Kami'},{id:'program',l:'Program Pengajian'},{id:'kemudahan',l:'Kemudahan'},{id:'hubungi',l:'Hubungi'}];
+    const programs = [
+      { nama:'Sijil Teknologi Maklumat', kod:'SKM-ICT', tahap:'SKM' },
+      { nama:'Sijil Elektronik Industri', kod:'SKM-ELE', tahap:'SKM' },
+      { nama:'Sijil Rekabentuk Grafik', kod:'SKM-GFX', tahap:'SKM' },
+      { nama:'Sijil Penyediaan Makanan', kod:'SKM-FNB', tahap:'SKM' },
+      { nama:'Sijil Perniagaan', kod:'SKM-BIZ', tahap:'SKM' },
+      { nama:'Sijil Akauntasi', kod:'SKM-ACC', tahap:'SKM' },
+    ];
+    const kemudahan = [
+      { nama:'Perpustakaan', ikon:'📚', hurai:'Koleksi buku, e-sumber dan ruang belajar.' },
+      { nama:'Makmal Komputer', ikon:'💻', hurai:'Kemudahan komputer dan internet berkelajuan tinggi.' },
+      { nama:'Dewan Serbaguna', ikon:'🏛️', hurai:'Ruang majlis, pameran dan aktiviti pelajar.' },
+      { nama:'Kafeteria', ikon:'🍽️', hurai:'Pelbagai pilihan makanan dan minuman.' },
+      { nama:'Padang Sukan', ikon:'⚽', hurai:'Kemudahan sukan luar dan dalam bangunan.' },
+      { nama:'Surau', ikon:'🕌', hurai:'Ruang solat untuk pelajar dan kakitangan.' },
+    ];
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="gradient-hero rounded-3xl p-6 mb-5 text-white">
+          <div className="text-xs opacity-70 mb-2 uppercase tracking-widest">Profil Institusi</div>
+          <h2 className="text-2xl font-bold mb-1">Kolej Komuniti Kulim</h2>
+          <p className="text-sm opacity-80">Sistem Pengajian POLYCC · Kementerian Pendidikan Tinggi Malaysia</p>
+        </div>
+
+        <div className="flex gap-1 mb-5 bg-light p-1 rounded-xl overflow-x-auto">
+          {tabs.map(t=>(
+            <button key={t.id} className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition flex-shrink-0 ${tab===t.id?'bg-white text-navy shadow-sm':'text-gray-500'}`} onClick={()=>setTab(t.id)}>{t.l}</button>
+          ))}
+        </div>
+
+        {tab==='tentang' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-graphite mb-3">Latar Belakang</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Kolej Komuniti Kulim merupakan sebuah institusi pengajian tinggi awam di bawah Jabatan Pengajian Politeknik dan Kolej Komuniti (JPPKK), Kementerian Pendidikan Tinggi Malaysia. Kolej ini menawarkan program sijil kemahiran teknikal dan vokasional untuk melahirkan graduan yang kompeten dan berdaya saing.</p>
+              <div className="mt-4 p-4 bg-light rounded-xl flex items-center gap-3">
+                <Icon name="location" size={18} cls="text-navy flex-shrink-0"/>
+                <div><div className="text-sm font-semibold text-graphite">Jalan Kota Kenari 2, Taman Kota Kenari, 09000 Kulim, Kedah</div><div className="text-xs text-gray-400 mt-0.5">Daerah Kulim, Kedah Darul Aman</div></div>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-2 mb-3"><div className="w-8 h-8 rounded-lg gradient-card flex items-center justify-center text-white text-sm">👁</div><h3 className="font-bold text-graphite">Visi</h3></div>
+                <p className="text-sm text-gray-600 leading-relaxed">Menjadi kolej komuniti terkemuka yang melahirkan modal insan berkemahiran tinggi, berakhlak mulia dan berdaya saing di peringkat kebangsaan dan antarabangsa.</p>
+              </div>
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-2 mb-3"><div className="w-8 h-8 rounded-xl gradient-red flex items-center justify-center text-white text-sm">🎯</div><h3 className="font-bold text-graphite">Misi</h3></div>
+                <p className="text-sm text-gray-600 leading-relaxed">Menyediakan pendidikan berkualiti yang berasaskan kemahiran teknikal, keusahawanan dan nilai murni bagi melahirkan graduan yang holistik dan memenuhi keperluan industri.</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-graphite mb-3">Hubungan Rasmi</h3>
+              <div className="space-y-3">
+                {[{icon:'globe',l:'Laman Web Rasmi',v:'kkkulim.mypolycc.edu.my',href:'https://kkkulim.mypolycc.edu.my'},{icon:'phone',l:'Telefon',v:'04-4900412'},{icon:'location',l:'Alamat',v:'Jalan Kota Kenari 2, Taman Kota Kenari, 09000 Kulim, Kedah'}].map((c,i)=>(
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-light">
+                    <Icon name={c.icon} size={16} cls="text-navy flex-shrink-0"/>
+                    <div><div className="text-xs text-gray-400">{c.l}</div>
+                    {c.href?<a href={c.href} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-navy hover:underline">{c.v}</a>:<div className="text-sm font-medium text-graphite">{c.v}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==='program' && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-500">Program yang ditawarkan (untuk maklumat terkini, sila semak laman web rasmi kolej)</p>
+              <span className="demo-badge">DATA DEMO</span>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {programs.map((p,i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 card-hover">
+                  <div className="w-10 h-10 rounded-xl gradient-card flex items-center justify-center text-white font-bold text-sm mb-3">{p.tahap}</div>
+                  <div className="font-semibold text-graphite text-sm">{p.nama}</div>
+                  <div className="text-xs text-gray-400 mt-1 font-mono">{p.kod}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab==='kemudahan' && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {kemudahan.map((k,i) => (
+              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 card-hover">
+                <div className="text-3xl mb-3">{k.ikon}</div>
+                <div className="font-semibold text-graphite">{k.nama}</div>
+                <div className="text-sm text-gray-500 mt-1">{k.hurai}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab==='hubungi' && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+            <h3 className="font-bold text-graphite">Maklumat Hubungan</h3>
+            {[{icon:'location',l:'Alamat',v:'Jalan Kota Kenari 2, Taman Kota Kenari, 09000 Kulim, Kedah'},{icon:'phone',l:'Telefon',v:'04-4900412'},{icon:'globe',l:'Laman Web',v:'https://kkkulim.mypolycc.edu.my'}].map((c,i)=>(
+              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-light">
+                <Icon name={c.icon} size={18} cls="text-navy flex-shrink-0 mt-0.5"/>
+                <div><div className="text-xs text-gray-400 mb-0.5">{c.l}</div><div className="text-sm font-medium text-graphite">{c.v}</div></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── AKTIVITI PAGE ───────────────────────────────────────────────────────
+  const AktivitiPage = () => {
+    const [filter, setFilter] = useState('Semua');
+    const [selected, setSelected] = useState(null);
+    const cats = ['Semua','Aktiviti JPP','Akademik','Sukan','Kesukarelawanan','Komuniti','Keusahawanan'];
+    const filtered = filter==='Semua' ? DEMO_EVENTS : DEMO_EVENTS.filter(e=>e.kategori===filter);
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl font-bold text-graphite">Aktiviti & Komuniti</h2>
+            <p className="text-sm text-gray-400 mt-0.5">Jadual aktiviti dan acara kolej</p>
+          </div>
+          <span className="demo-badge">DATA DEMO</span>
+        </div>
+
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+          {cats.map(c => (
+            <button key={c} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition flex-shrink-0 ${filter===c?'bg-navy text-white':'bg-white text-gray-600 border border-gray-200 hover:border-navy hover:text-navy'}`} onClick={()=>setFilter(c)}>{c}</button>
+          ))}
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(ev => (
+            <div key={ev.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover cursor-pointer" onClick={()=>setSelected(ev)}>
+              <div className="h-28 flex items-center justify-center relative" style={{background:`linear-gradient(135deg,${ev.warna},${ev.warna}cc)`}}>
+                <div className="text-white text-opacity-20 text-6xl absolute">📅</div>
+                <div className="text-center z-10">
+                  <div className="text-white/70 text-xs uppercase tracking-widest">{ev.kategori}</div>
+                  <div className="text-white font-bold text-4xl">{new Date(ev.tarikh).getDate()}</div>
+                  <div className="text-white/80 text-xs">{new Date(ev.tarikh).toLocaleDateString('ms-MY',{month:'long',year:'numeric'})}</div>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="font-semibold text-graphite text-sm mb-2">{ev.tajuk}</div>
+                <div className="flex items-center gap-2 text-xs text-gray-400 mb-1"><Icon name="location" size={12}/>{ev.venue}</div>
+                <div className="flex items-center gap-2 text-xs text-gray-400">{ev.masa}</div>
+                <button className="mt-3 w-full btn-outline px-3 py-2 rounded-xl text-xs font-semibold">Lihat Butiran</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selected && (
+          <div className="modal-overlay" onClick={()=>setSelected(null)}>
+            <div className="modal-box" onClick={e=>e.stopPropagation()}>
+              <div className="h-28 rounded-xl mb-4 flex items-center justify-center" style={{background:`linear-gradient(135deg,${selected.warna},${selected.warna}cc)`}}>
+                <div className="text-center text-white">
+                  <div className="text-5xl font-bold">{new Date(selected.tarikh).getDate()}</div>
+                  <div className="text-sm opacity-80">{new Date(selected.tarikh).toLocaleDateString('ms-MY',{month:'long',year:'numeric'})}</div>
+                </div>
+              </div>
+              <div className="flex items-start justify-between mb-3">
+                <div><span className="tag mb-2 inline-block">{selected.kategori}</span><h3 className="font-bold text-graphite text-lg">{selected.tajuk}</h3></div>
+                <button className="p-2 rounded-xl hover:bg-light" onClick={()=>setSelected(null)}><Icon name="close" size={18}/></button>
+              </div>
+              <div className="space-y-3">
+                {[{icon:'aktiviti',l:'Tarikh & Masa',v:`${fmtDate(selected.tarikh)} · ${selected.masa}`},{icon:'location',l:'Tempat',v:selected.venue}].map((f,i)=>(
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-light"><Icon name={f.icon} size={15} cls="text-navy flex-shrink-0"/><div><div className="text-xs text-gray-400">{f.l}</div><div className="text-sm font-medium text-graphite">{f.v}</div></div></div>
+                ))}
+                <div className="bg-light rounded-xl p-3"><div className="text-xs text-gray-400 mb-1">Deskripsi</div><p className="text-sm text-gray-600">{selected.deskripsi}</p></div>
+              </div>
+              <div className="flex gap-3 mt-4">
+                <button className="flex-1 btn-primary px-4 py-2.5 rounded-xl text-sm font-semibold">Daftar Sekarang</button>
+                <button className="flex-1 btn-outline px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"><Icon name="download" size={15}/>Muat Turun</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── CARTA ORG ───────────────────────────────────────────────────────────
+  const OrgPage = () => {
+    const OrgCard = ({ data, size='normal' }) => (
+      <div className={`org-card ${size==='large'?'p-5':''}`}>
+        <div className={`avatar-placeholder mx-auto mb-3 ${size==='large'?'w-16 h-16 text-xl':'w-12 h-12 text-base'}`}>{data.inisial}</div>
+        <div className={`font-bold text-graphite ${size==='large'?'text-base':'text-sm'}`}>{data.nama}</div>
+        <div className={`font-semibold mt-1 ${size==='large'?'text-sm':'text-xs'}`} style={{color:'#263F75'}}>{data.jawatan}</div>
+        {data.nota && <div className="text-xs text-gray-400 mt-1">{data.nota}</div>}
+      </div>
+    );
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-graphite">Carta Organisasi JPP</h2>
+          <p className="text-sm text-gray-400 mt-0.5">Sesi Akademik 2024/2025 · Kolej Komuniti Kulim</p>
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 flex gap-3">
+          <Icon name="info" size={16} cls="text-amber-600 flex-shrink-0 mt-0.5"/>
+          <p className="text-sm text-amber-800">Nama sebenar ahli JPP tidak ditunjukkan di sini. Sila hubungi Pejabat Hal Ehwal Pelajar untuk maklumat yang disahkan.</p>
+        </div>
+
+        {/* Penasihat */}
+        <div className="flex justify-center mb-6">
+          <div className="max-w-xs w-full">
+            <div className="text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Penasihat</div>
+            <OrgCard data={JPP_ORG.penasihat} size="large"/>
+          </div>
+        </div>
+
+        {/* Connector */}
+        <div className="flex justify-center mb-6"><div className="w-px h-8 bg-gray-200"/></div>
+
+        {/* YDP */}
+        <div className="flex justify-center mb-6">
+          <div className="max-w-xs w-full">
+            <div className="text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Pimpinan Utama</div>
+            <OrgCard data={JPP_ORG.ydp} size="large"/>
+          </div>
+        </div>
+
+        <div className="flex justify-center mb-6"><div className="w-px h-8 bg-gray-200"/></div>
+
+        {/* TYDP, SU, Bendahari */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          {[JPP_ORG.tydp, JPP_ORG.setiausaha, JPP_ORG.bendahari].map((m,i)=>(
+            <OrgCard key={i} data={m}/>
+          ))}
+        </div>
+
+        {/* EXCO */}
+        <div>
+          <div className="text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Ahli Jawatankuasa Eksekutif</div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {JPP_ORG.exco.map((m,i) => <OrgCard key={i} data={m}/>)}
+          </div>
+        </div>
+
+        <div className="mt-6 bg-light rounded-2xl p-4 text-center">
+          <div className="text-sm text-gray-500">Untuk maklumat hubungan ahli JPP, sila layari Pejabat Hal Ehwal Pelajar atau hubungi <strong>04-4900412</strong></div>
+        </div>
+      </div>
+    );
+  };
+
+  // ─── PENGUMUMAN PAGE ─────────────────────────────────────────────────────
+  const PengumumanPage = () => {
+    const [filter, setFilter] = useState('Semua');
+    const [selected, setSelected] = useState(null);
+    const cats = ['Semua','Akademik','Pentadbiran','Peluang','Pengiktirafan','Kemudahan'];
+    const filtered = filter==='Semua' ? DEMO_PENGUMUMAN : DEMO_PENGUMUMAN.filter(p=>p.kategori===filter);
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl font-bold text-graphite">Pengumuman</h2>
+            <p className="text-sm text-gray-400 mt-0.5">Maklumat dan kenyataan terkini</p>
+          </div>
+          <span className="demo-badge">DATA DEMO</span>
+        </div>
+
+        {/* Pinned */}
+        <div className="mb-5">
+          <div className="text-xs font-semibold text-red uppercase tracking-widest mb-3 flex items-center gap-2"><span>📌</span> Disematkan</div>
+          <div className="space-y-3">
+            {DEMO_PENGUMUMAN.filter(p=>p.penting).map(p=>(
+              <div key={p.id} className="bg-white border-2 border-red/20 rounded-2xl p-4 shadow-sm cursor-pointer card-hover" onClick={()=>setSelected(p)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="tag bg-red/10 text-red">{p.kategori}</span>
+                      <span className="text-[10px] font-bold text-red">● PENTING</span>
+                    </div>
+                    <div className="font-semibold text-graphite">{p.tajuk}</div>
+                    <div className="text-xs text-gray-400 mt-1">{fmtDate(p.tarikh)}</div>
+                  </div>
+                  <Icon name="arrow" size={16} cls="text-gray-300 flex-shrink-0 mt-1"/>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {cats.map(c=>(
+            <button key={c} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition ${filter===c?'bg-navy text-white':'bg-white text-gray-600 border border-gray-200 hover:border-navy hover:text-navy'}`} onClick={()=>setFilter(c)}>{c}</button>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          {filtered.map(p => (
+            <div key={p.id} className={`announcement-card cursor-pointer card-hover ${p.penting?'urgent':''}`} onClick={()=>setSelected(p)}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap"><span className="tag">{p.kategori}</span></div>
+                  <div className="font-semibold text-graphite text-sm">{p.tajuk}</div>
+                  <div className="text-xs text-gray-400 mt-1">{fmtDate(p.tarikh)}</div>
+                </div>
+                <Icon name="arrow" size={16} cls="text-gray-300 flex-shrink-0 mt-1"/>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selected && (
+          <div className="modal-overlay" onClick={()=>setSelected(null)}>
+            <div className="modal-box" onClick={e=>e.stopPropagation()}>
+              <div className="flex items-start justify-between mb-4">
+                <div><span className="tag mb-2 inline-block">{selected.kategori}</span><h3 className="font-bold text-graphite text-lg">{selected.tajuk}</h3><div className="text-sm text-gray-400 mt-1">{fmtDate(selected.tarikh)}</div></div>
+                <button className="p-2 rounded-xl hover:bg-light" onClick={()=>setSelected(null)}><Icon name="close" size={18}/></button>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">{selected.kandungan}</p>
+              <div className="mt-4 p-3 bg-light rounded-xl text-xs text-gray-500">Diterbitkan oleh Pejabat Pengurusan Kolej Komuniti Kulim · {fmtDate(selected.tarikh)}</div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── SUARA PELAJAR ───────────────────────────────────────────────────────
+  const SuaraPage = () => {
+    const [tab, setTab] = useState('cadangan');
+    const [form, setForm] = useState({ tajuk:'', isi:'', nama:'', tanpanam:false });
+    const [submitted, setSubmitted] = useState(false);
+    const [cadangan, setCadangan] = useState([
+      { id:1, tajuk:'Tambah Kemudahan Mesin ATM di Kampus', undi:24, kategori:'Kemudahan' },
+      { id:2, tajuk:'Buka Perpustakaan Sehingga 11 Malam Semasa Peperiksaan', undi:41, kategori:'Akademik' },
+      { id:3, tajuk:'Wujudkan Platform Pertukaran Buku Pelajar', undi:18, kategori:'Kebajikan' },
+    ]);
+    const [undian, setUndian] = useState([false,false,false]);
+
+    const hantar = () => {
+      if(!form.tajuk.trim()||!form.isi.trim()) return;
+      setCadangan(c=>[{ id:Date.now(), tajuk:form.tajuk, undi:0, kategori:'Umum' },...c]);
+      setSubmitted(true);
+      setForm({ tajuk:'', isi:'', nama:'', tanpanam:false });
+    };
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-graphite">Suara Pelajar</h2>
+          <p className="text-sm text-gray-400 mt-0.5">Kongsi idea, cadangan dan maklum balas anda</p>
+        </div>
+
+        <div className="flex gap-1 mb-5 bg-light p-1 rounded-xl w-fit">
+          {[{id:'cadangan',l:'Cadangan'},{id:'hantar',l:'Hantar Idea'},{id:'poll',l:'Tinjauan Pendapat'}].map(t=>(
+            <button key={t.id} className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${tab===t.id?'bg-white text-navy shadow-sm':'text-gray-500'}`} onClick={()=>setTab(t.id)}>{t.l}</button>
+          ))}
+        </div>
+
+        {tab==='cadangan' && (
+          <div className="space-y-3">
+            {cadangan.map((c,i) => (
+              <div key={c.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                <div className="text-center">
+                  <button className={`w-10 h-10 rounded-xl border-2 flex flex-col items-center justify-center transition ${undian[i]?'border-navy bg-navy text-white':'border-gray-200 text-gray-400 hover:border-navy hover:text-navy'}`} onClick={()=>{const u=[...undian];u[i]=!u[i];setUndian(u);}}>
+                    <span className="text-xs">▲</span>
+                    <span className="text-xs font-bold">{c.undi+(undian[i]?1:0)}</span>
+                  </button>
+                </div>
+                <div className="flex-1"><div className="font-semibold text-graphite text-sm">{c.tajuk}</div><span className="tag mt-1 inline-block">{c.kategori}</span></div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab==='hantar' && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            {submitted && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 flex gap-2">
+                <Icon name="check" size={16} cls="text-green-600 flex-shrink-0"/>
+                <div className="text-sm text-green-800">Cadangan anda telah diterima untuk semakan. Terima kasih!</div>
+              </div>
+            )}
+            <div className="space-y-4">
+              <div><label className="block text-sm font-semibold text-graphite mb-1.5">Tajuk Cadangan *</label>
+                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm" placeholder="Ringkaskan cadangan anda" value={form.tajuk} onChange={e=>setForm(f=>({...f,tajuk:e.target.value}))}/>
+              </div>
+              <div><label className="block text-sm font-semibold text-graphite mb-1.5">Huraian *</label>
+                <textarea className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none" rows={4} placeholder="Terangkan cadangan anda dengan lebih lanjut..." value={form.isi} onChange={e=>setForm(f=>({...f,isi:e.target.value}))}/>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.tanpanam} onChange={e=>setForm(f=>({...f,tanpanam:e.target.checked}))} className="w-4 h-4 rounded"/>
+                <span className="text-sm text-gray-600">Hantar tanpa nama (identiti dilindungi)</span>
+              </label>
+              <div className="bg-light rounded-xl p-3 flex gap-2">
+                <Icon name="lock" size={15} cls="text-gray-400 flex-shrink-0"/>
+                <p className="text-xs text-gray-500">Semua cadangan akan disemak oleh moderator JPP sebelum disiarkan. Kandungan yang tidak sesuai akan ditolak.</p>
+              </div>
+              <button className="w-full btn-primary px-4 py-2.5 rounded-xl text-sm font-semibold" onClick={hantar}>Hantar Cadangan</button>
+            </div>
+          </div>
+        )}
+
+        {tab==='poll' && (
+          <div className="space-y-4">
+            <div className="demo-badge mb-2">DATA DEMO — Tinjauan Contoh</div>
+            {[{ soalan:'Apakah kemudahan yang paling perlu dinaiktaraf?', pilihan:[{t:'Bilik Kuliah',v:62},{t:'Kafeteria',v:38},{t:'Makmal ICT',v:45},{t:'Tandas',v:55}] }].map((p,pi)=>{
+              const total = p.pilihan.reduce((a,b)=>a+b.v,0);
+              return (
+                <div key={pi} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                  <div className="font-semibold text-graphite mb-4">{p.soalan}</div>
+                  <div className="space-y-3">
+                    {p.pilihan.map((pil,i)=>(
+                      <div key={i}>
+                        <div className="flex justify-between text-sm mb-1"><span>{pil.t}</span><span className="text-gray-400 font-semibold">{Math.round(pil.v/total*100)}%</span></div>
+                        <div className="progress-bar"><div className="progress-fill" style={{width:`${pil.v/total*100}%`}}/></div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-3">{total} responden · DATA DEMO</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── GALERI ──────────────────────────────────────────────────────────────
+  const GaleriPage = () => {
+    const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('Semua');
+    const cats = ['Semua','Aktiviti','Akademik','Komuniti','Pengiktirafan'];
+    const filtered = DEMO_GALERI.filter(g => (filter==='Semua'||g.kategori===filter) && (g.album.toLowerCase().includes(search.toLowerCase())));
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="flex items-center justify-between mb-5">
+          <div><h2 className="text-xl font-bold text-graphite">Galeri Digital</h2><p className="text-sm text-gray-400 mt-0.5">Album gambar aktiviti dan acara kolej</p></div>
+          <span className="demo-badge">DATA DEMO</span>
+        </div>
+
+        <div className="flex gap-3 mb-4">
+          <div className="flex-1 flex items-center bg-white border border-gray-200 rounded-xl px-3 gap-2">
+            <Icon name="search" size={15} cls="text-gray-400"/>
+            <input className="flex-1 py-2.5 text-sm outline-none" placeholder="Cari album..." value={search} onChange={e=>setSearch(e.target.value)}/>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+          {cats.map(c=>(
+            <button key={c} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition ${filter===c?'bg-navy text-white':'bg-white text-gray-600 border border-gray-200'}`} onClick={()=>setFilter(c)}>{c}</button>
+          ))}
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(g => (
+            <div key={g.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover cursor-pointer">
+              <div className="h-36 flex items-center justify-center relative overflow-hidden" style={{background:`linear-gradient(135deg,${g.warna}22,${g.warna}44)`}}>
+                <div className="text-6xl opacity-30">🖼️</div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold" style={{color:g.warna}}>{g.gambar}</div>
+                    <div className="text-xs font-medium" style={{color:g.warna}}>gambar</div>
+                  </div>
+                </div>
+                <span className="absolute top-3 right-3 tag" style={{background:`${g.warna}22`,color:g.warna}}>{g.kategori}</span>
+              </div>
+              <div className="p-4">
+                <div className="font-semibold text-graphite text-sm">{g.album}</div>
+                <div className="text-xs text-gray-400 mt-1">{fmtDate(g.tarikh)}</div>
+                <button className="mt-3 w-full btn-outline px-3 py-2 rounded-xl text-xs font-semibold">Buka Album</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="text-center py-12 text-gray-400">
+            <div className="text-4xl mb-3">🔍</div>
+            <div className="text-sm">Tiada album yang sepadan dengan carian anda.</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── DOKUMEN PAGE ─────────────────────────────────────────────────────────
+  const DokumenPage = () => {
+    const [filter, setFilter] = useState('Semua');
+    const [search, setSearch] = useState('');
+    const cats = ['Semua','Borang','Panduan','Panduan JPP','Minit Mesyuarat'];
+    const filtered = DEMO_DOKUMEN.filter(d => (filter==='Semua'||d.kategori===filter) && d.nama.toLowerCase().includes(search.toLowerCase()));
+    const fmtIkon = (f) => f==='PDF'?'📄':'📝';
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="flex items-center justify-between mb-5">
+          <div><h2 className="text-xl font-bold text-graphite">Dokumen & Borang</h2><p className="text-sm text-gray-400 mt-0.5">Muat turun borang dan dokumen rasmi</p></div>
+          <span className="demo-badge">DATA DEMO</span>
+        </div>
+
+        <div className="bg-light rounded-2xl p-4 mb-5 border border-gray-200">
+          <div className="flex items-center gap-2 mb-2"><Icon name="info" size={15} cls="text-navy"/><span className="text-sm font-semibold text-graphite">Notis Dokumen</span></div>
+          <p className="text-sm text-gray-500">Semua dokumen di sini adalah versi demo. Untuk borang dan dokumen rasmi, sila ke Pejabat Hal Ehwal Pelajar atau kaunter pentadbiran kolej.</p>
+        </div>
+
+        <div className="flex gap-3 mb-4">
+          <div className="flex-1 flex items-center bg-white border border-gray-200 rounded-xl px-3 gap-2">
+            <Icon name="search" size={15} cls="text-gray-400"/>
+            <input className="flex-1 py-2.5 text-sm outline-none" placeholder="Cari dokumen..." value={search} onChange={e=>setSearch(e.target.value)}/>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+          {cats.map(c=>(
+            <button key={c} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition ${filter===c?'bg-navy text-white':'bg-white text-gray-600 border border-gray-200'}`} onClick={()=>setFilter(c)}>{c}</button>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          {filtered.map(d => (
+            <div key={d.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4 card-hover">
+              <div className="w-12 h-12 rounded-xl bg-light flex items-center justify-center text-2xl flex-shrink-0">{fmtIkon(d.format)}</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-graphite text-sm truncate">{d.nama}</div>
+                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                  <span className="tag">{d.kategori}</span>
+                  <span className="text-xs text-gray-400">{d.format} · {d.saiz}</span>
+                  <span className="text-xs text-gray-400">{fmtDate(d.tarikh)}</span>
+                </div>
+              </div>
+              <button className="flex-shrink-0 w-9 h-9 rounded-xl bg-light hover:bg-navy hover:text-white flex items-center justify-center transition text-gray-400">
+                <Icon name="download" size={16}/>
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {filtered.length===0 && (
+          <div className="text-center py-12 text-gray-400"><div className="text-4xl mb-3">📂</div><div className="text-sm">Tiada dokumen yang sepadan.</div></div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── HUBUNGI PAGE ─────────────────────────────────────────────────────────
+  const HubungiPage = () => {
+    const [sent, setSent] = useState(false);
+    const [form, setForm] = useState({ nama:'', emel:'', mesej:'' });
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="mb-5"><h2 className="text-xl font-bold text-graphite">Hubungi Kami</h2><p className="text-sm text-gray-400 mt-0.5">Berhubung dengan JPP Kolej Komuniti Kulim</p></div>
+
+        <div className="grid lg:grid-cols-2 gap-5">
+          <div className="space-y-4">
+            {[{icon:'location',title:'Alamat',val:'Jalan Kota Kenari 2, Taman Kota Kenari, 09000 Kulim, Kedah'},{icon:'phone',title:'Telefon',val:'04-4900412'},{icon:'globe',title:'Laman Web Rasmi',val:'kkkulim.mypolycc.edu.my',href:'https://kkkulim.mypolycc.edu.my'},{icon:'mail',title:'E-mel JPP',val:'jpp@kkkulim.edu.my (Rujukan Sahaja)'}].map((c,i)=>(
+              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl gradient-card flex items-center justify-center flex-shrink-0"><Icon name={c.icon} size={17} cls="text-white"/></div>
+                <div><div className="text-xs text-gray-400 mb-0.5">{c.title}</div>
+                {c.href?<a href={c.href} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-navy hover:underline">{c.val}</a>:<div className="text-sm font-medium text-graphite">{c.val}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h3 className="font-bold text-graphite mb-4">Hantar Mesej ke JPP</h3>
+            {sent ? (
+              <div className="text-center py-8">
+                <div className="text-5xl mb-3">✅</div>
+                <div className="font-semibold text-graphite">Mesej Diterima!</div>
+                <div className="text-sm text-gray-500 mt-2">Mesej anda telah dihantar ke JPP. Kami akan menghubungi anda tidak lama lagi.</div>
+                <button className="mt-4 btn-outline px-4 py-2 rounded-xl text-sm font-semibold" onClick={()=>setSent(false)}>Hantar Lagi</button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div><label className="block text-sm font-semibold text-graphite mb-1.5">Nama Penuh *</label><input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm" placeholder="Nama anda" value={form.nama} onChange={e=>setForm(f=>({...f,nama:e.target.value}))}/></div>
+                <div><label className="block text-sm font-semibold text-graphite mb-1.5">E-mel *</label><input type="email" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm" placeholder="email@contoh.com" value={form.emel} onChange={e=>setForm(f=>({...f,emel:e.target.value}))}/></div>
+                <div><label className="block text-sm font-semibold text-graphite mb-1.5">Mesej *</label><textarea className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none" rows={4} placeholder="Taip mesej anda di sini..." value={form.mesej} onChange={e=>setForm(f=>({...f,mesej:e.target.value}))}/></div>
+                <button className="w-full btn-primary px-4 py-2.5 rounded-xl text-sm font-semibold" onClick={()=>{if(form.nama&&form.emel&&form.mesej)setSent(true);}}>Hantar Mesej</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ─── ADMIN DASHBOARD ─────────────────────────────────────────────────────
+  const AdminPage = () => {
+    const [tab, setTab] = useState('overview');
+
+    return (
+      <div className="p-4 lg:p-6 pb-20 lg:pb-6 fade-in">
+        <div className="flex items-center justify-between mb-3">
+          <div><h2 className="text-xl font-bold text-graphite">Admin Dashboard</h2><p className="text-sm text-gray-400 mt-0.5">Panel pengurusan JPP — kawalan akses berasaskan peranan</p></div>
+          <span className="demo-badge">DATA DEMO</span>
+        </div>
+
+        <div className="bg-red/5 border border-red/20 rounded-2xl p-4 mb-5 flex gap-3">
+          <Icon name="lock" size={16} cls="text-red flex-shrink-0 mt-0.5"/>
+          <div className="text-sm text-red/80"><strong>Panel Demo:</strong> Fungsi pentadbiran ini memerlukan pengesahan identiti sebenar. Data ini adalah DATA DEMO dan bukan rekod sebenar. Sistem pengeluaran memerlukan Supabase + PostgreSQL dengan Row-Level Security.</div>
+        </div>
+
+        <div className="flex gap-1 mb-5 bg-light p-1 rounded-xl overflow-x-auto">
+          {[{id:'overview',l:'Gambaran Keseluruhan'},{id:'aduan',l:'Urus Aduan'},{id:'pengguna',l:'Pengguna & Peranan'},{id:'laporan',l:'Laporan'}].map(t=>(
+            <button key={t.id} className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap flex-shrink-0 transition ${tab===t.id?'bg-white text-navy shadow-sm':'text-gray-500'}`} onClick={()=>setTab(t.id)}>{t.l}</button>
+          ))}
+        </div>
+
+        {tab==='overview' && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[{l:'Jumlah Aduan',v:'12',c:'#D12F43',i:'aduan'},{l:'Menunggu Tindakan',v:'4',c:'#f59e0b',i:'info'},{l:'Aktiviti Aktif',v:'6',c:'#263F75',i:'aktiviti'},{l:'Pengguna Aktif',v:'847',c:'#059669',i:'org'}].map((s,i)=>(
+                <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                  <div className="text-2xl font-bold" style={{color:s.c}}>{s.v}</div>
+                  <div className="text-sm text-gray-500 mt-0.5">{s.l}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-graphite">Status Aduan Terkini</h3><span className="demo-badge">DATA DEMO</span></div>
+              <div className="space-y-2">
+                {DEMO_ADUAN.map(a=>(
+                  <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl bg-light">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-graphite truncate">{a.tajuk}</div>
+                      <div className="text-xs text-gray-400">{a.id} · {a.kategori}</div>
+                    </div>
+                    <StatusBadge status={a.status}/>
+                    <select className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white" defaultValue={a.status}>
+                      {['Diterima','Dalam Semakan','Dalam Tindakan','Selesai'].map(s=><option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <h3 className="font-semibold text-graphite mb-3">Penerbitan Tertangguh</h3>
+                <div className="space-y-2">
+                  {[{t:'Pengumuman: Tarikh Pendaftaran Semester Baru',k:'Akademik'},{t:'Galeri: Album Karnival Sains 2025',k:'Galeri'},{t:'Suara Pelajar: Cadangan Baru (3)',k:'Suara'}].map((p,i)=>(
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-light">
+                      <div className="flex-1 min-w-0"><div className="text-xs font-semibold text-graphite truncate">{p.t}</div><div className="text-[11px] text-gray-400">{p.k}</div></div>
+                      <div className="flex gap-1">
+                        <button className="px-2 py-1 rounded-lg bg-green-100 text-green-700 text-xs font-semibold">Lulus</button>
+                        <button className="px-2 py-1 rounded-lg bg-red/10 text-red text-xs font-semibold">Tolak</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <h3 className="font-semibold text-graphite mb-3">Log Audit Terkini</h3>
+                <div className="space-y-2">
+                  {[{a:'Aduan ADU-2025-001 dikemas kini → Selesai',t:'10 minit lalu'},{a:'Pengumuman baharu diterbitkan',t:'2 jam lalu'},{a:'Log masuk: admin@kkkulim.edu.my',t:'3 jam lalu'},{a:'Dokumen baharu dimuat naik',t:'1 hari lalu'}].map((l,i)=>(
+                    <div key={i} className="flex items-start gap-2 text-xs">
+                      <div className="w-1.5 h-1.5 rounded-full bg-navy mt-1.5 flex-shrink-0"/>
+                      <div><div className="text-graphite">{l.a}</div><div className="text-gray-400">{l.t}</div></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==='pengguna' && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-graphite">Pengguna & Peranan</h3>
+              <span className="demo-badge">DATA DEMO</span>
+            </div>
+            <div className="space-y-3">
+              {[{nama:'[Pelajar Demo]',peranan:'Pelajar',akses:'e-Aduan, Maklumat, Galeri, Dokumen',warna:'#059669'},{nama:'[Ahli JPP Demo]',peranan:'Ahli JPP',akses:'Semua modul pelajar + Pengurusan Aktiviti',warna:'#263F75'},{nama:'[Penyelaras Demo]',peranan:'Penyelaras/Penasihat',akses:'Semua modul + Kelulusan kandungan',warna:'#7c3aed'},{nama:'[Pentadbir Demo]',peranan:'Pentadbir Kolej',akses:'Akses penuh + Log audit + Eksport',warna:'#D12F43'}].map((u,i)=>(
+                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-light">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{background:u.warna}}>{u.nama[1]}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-graphite">{u.nama}</div>
+                    <div className="text-xs text-gray-400 truncate">{u.akses}</div>
+                  </div>
+                  <span className="flex-shrink-0 text-xs font-bold px-2.5 py-1 rounded-full" style={{background:`${u.warna}18`,color:u.warna}}>{u.peranan}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab==='laporan' && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-graphite">Eksport Laporan</h3>
+              <span className="demo-badge">DATA DEMO</span>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">Fungsi eksport memerlukan sambungan backend yang disahkan. Dalam mod demo, butang ini tidak mengeksport data sebenar.</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[{l:'Laporan Aduan Bulanan',f:'CSV/PDF'},{l:'Statistik Aktiviti & Penyertaan',f:'CSV/PDF'},{l:'Laporan Pengguna Aktif',f:'CSV'},{l:'Log Audit Sistem',f:'PDF'}].map((r,i)=>(
+                <div key={i} className="p-4 rounded-xl bg-light flex items-center justify-between">
+                  <div><div className="text-sm font-semibold text-graphite">{r.l}</div><div className="text-xs text-gray-400">{r.f}</div></div>
+                  <button className="btn-outline px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5"><Icon name="download" size={13}/>Eksport</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab==='aduan' && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-graphite">Pengurusan Aduan</h3>
+              <div className="flex gap-2">
+                <button className="btn-outline px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5"><Icon name="filter" size={13}/>Tapis</button>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {DEMO_ADUAN.map(a=>(
+                <div key={a.id} className="p-4 rounded-xl bg-light">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div><div className="font-semibold text-graphite text-sm">{a.tajuk}</div><div className="text-xs text-gray-400">{a.id} · {a.kategori} · {fmtDate(a.tarikh)}</div></div>
+                    <StatusBadge status={a.status}/>
+                  </div>
+                  <div className="text-sm text-gray-600 mb-3">{a.keterangan.slice(0,100)}...</div>
+                  <div className="flex gap-2">
+                    <select className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white" defaultValue={a.status}>
+                      {['Diterima','Dalam Semakan','Dalam Tindakan','Selesai'].map(s=><option key={s}>{s}</option>)}
+                    </select>
+                    <button className="flex-1 btn-outline px-3 py-1.5 rounded-lg text-xs font-semibold">Balas Pelajar</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ─── MAIN APP ─────────────────────────────────────────────────────────────
+  const App = () => {
+    const [page, setPage] = useState('dashboard');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const pages = {
+      dashboard: DashboardPage,
+      aduan: AduanPage,
+      info: InfoPage,
+      aktiviti: AktivitiPage,
+      org: OrgPage,
+      pengumuman: PengumumanPage,
+      suara: SuaraPage,
+      galeri: GaleriPage,
+      dokumen: DokumenPage,
+      hubungi: HubungiPage,
+      admin: AdminPage,
+    };
+
+    const PageComponent = pages[page] || DashboardPage;
+
+    return (
+      <div className="min-h-screen bg-light">
+        <Sidebar active={page} setPage={setPage} isOpen={sidebarOpen} onClose={()=>setSidebarOpen(false)}/>
+        <div className="main-content">
+          <Header page={page} onMenuClick={()=>setSidebarOpen(true)} onNav={setPage}/>
+          <main><PageComponent setPage={setPage}/></main>
+        </div>
+        <BottomNav active={page} setPage={setPage}/>
+      </div>
+    );
+  };
+
+  const root = createRoot(document.getElementById('app'));
+  root.render(React.createElement(App));
+}
+</script>
+</body>
+</html>
